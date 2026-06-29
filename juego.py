@@ -1,78 +1,44 @@
-import random
+import datos
+import logica
+import vista
 
-# Opciones del juego
-opciones = ["piedra", "papel", "tijera", "dinamita"]
-PUNTOS_PARA_GANAR = 3
+def jugar_partida():
+    logica.reiniciar_puntajes()
 
-print("=====================================")
-print("   PIEDRA, PAPEL, TIJERA, DINAMITA   ")
-print("=====================================")
+    while not logica.hay_ganador():
+        vista.mostrar_marcador()
 
-seguir_jugando = True
+        eleccion = vista.pedir_eleccion()
+        eleccion = logica.normalizar_eleccion(eleccion)
 
-while seguir_jugando:
-
-    # Reiniciar puntajes para cada partida
-    puntaje_jugador = 0
-    puntaje_computadora = 0
-
-    # Jugar rondas hasta que alguien llegue a 3
-    while puntaje_jugador < PUNTOS_PARA_GANAR and puntaje_computadora < PUNTOS_PARA_GANAR:
-
-        print("\n--- MARCADOR ---")
-        print("  Jugador     :", puntaje_jugador)
-        print("  Computadora :", puntaje_computadora)
-        print("----------------")
-
-        print("\nOpciones: piedra | papel | tijera | dinamita ")
-        eleccion_jugador = input("Tu eleccion: ").strip().lower()
-
-        if eleccion_jugador not in opciones:
+        if eleccion not in datos.opciones:
             print("Opcion no valida, intenta de nuevo.")
             continue
 
-        # La computadora elige al azar
-        eleccion_pc = random.choice(opciones)
+        pc = logica.eleccion_computadora()
+        resultado = logica.determinar_ganador(eleccion, pc)
 
-        print("\nTu elegiste  :", eleccion_jugador)
-        print("Computadora  :", eleccion_pc)
+        logica.actualizar_puntaje(resultado)
+        vista.mostrar_resultado_ronda(eleccion, pc, resultado)
 
-        # Comparar jugadas
-        if eleccion_jugador == eleccion_pc:
-            print(">>> Empate en esta ronda.")
+    vista.mostrar_marcador()
+    vista.mostrar_ganador_partida()
+    vista.mostrar_historial()
 
-        elif eleccion_jugador == "piedra" and eleccion_pc == "tijera":
-            print(">>> Ganaste esta ronda!")
-            puntaje_jugador = puntaje_jugador + 1
-
-        elif eleccion_jugador == "tijera" and eleccion_pc == "papel":
-            print(">>> Ganaste esta ronda!")
-            puntaje_jugador = puntaje_jugador + 1
-
-        elif eleccion_jugador == "papel" and eleccion_pc == "piedra":
-            print(">>> Ganaste esta ronda!")
-            puntaje_jugador = puntaje_jugador + 1
-
-        else:
-            print(">>> La computadora gano esta ronda.")
-            puntaje_computadora = puntaje_computadora + 1
-
-    # Mostrar marcador final
-    print("\n--- MARCADOR FINAL ---")
-    print("  Jugador     :", puntaje_jugador)
-    print("  Computadora :", puntaje_computadora)
-    print("----------------------")
-
-    # Anunciar ganador de la partida
-    if puntaje_jugador >= PUNTOS_PARA_GANAR:
-        print("\n*** GANASTE LA PARTIDA! Felicitaciones! ***")
+    if datos.puntaje_jugador >= datos.PUNTOS_PARA_GANAR:
+        datos.partidas_ganadas = datos.partidas_ganadas + 1
     else:
-        print("\n*** La computadora gano la partida. Mejor suerte la proxima! ***")
+        datos.partidas_perdidas = datos.partidas_perdidas + 1
 
-    # Preguntar si quiere jugar de nuevo
-    respuesta = input("\nQuieres jugar de nuevo? (s/n): ").strip().lower()
+def main():
+    vista.mostrar_bienvenida()
 
-    if respuesta != "s":
-        seguir_jugando = False
+    while True:
+        jugar_partida()
 
-print("\nHasta luego!")
+        if not vista.preguntar_revancha():
+            vista.mostrar_estadisticas_sesion()
+            print("\nHasta luego!")
+            break
+
+main()
